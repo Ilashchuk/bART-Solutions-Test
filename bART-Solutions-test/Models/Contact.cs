@@ -11,6 +11,6 @@ namespace bART_Solutions_test.Models
         public string? LastName { get; init; }
         [Required]
         public string? Email { get; init; }
-        public ICollection<Account> Accounts { get; init; } = new List<Account>();
+        private ICollection<Account> Accounts { get; init; } = new List<Account>();
     }
 }
