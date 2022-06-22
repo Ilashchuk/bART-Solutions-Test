@@ -22,6 +22,9 @@ namespace bART_Solutions_test.Data
             builder.Entity<Account>(entity => {
                 entity.HasIndex(a => a.Name).IsUnique();
             });
+            builder.Entity<Incident>(entity => {
+                entity.HasIndex(i => i.Name).IsUnique();
+            });
         }
     }
 }
