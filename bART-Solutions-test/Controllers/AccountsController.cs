@@ -98,15 +98,35 @@ namespace bART_Solutions_test.Controllers
                 return Problem("Entity set 'bARTSolutionsContext.Accounts'  is null.");
             }
 
-            Account? newAccount = _services.ChangingBeforAddingToDB(account);
-            if (newAccount == null)
+            if (account == null)
             {
                 return BadRequest();
             }
-            _context.Accounts.Add(newAccount);
+
+            if (account.ContactId == 0 && account.Contact == null)
+            {
+                return BadRequest();
+            }
+
+            if (!_services.IsInDb(account.Contact))
+            {
+                _context.Contacts.AddRange(new Contact
+                {
+                    FirstName = account.Contact.FirstName,
+                    LastName = account.Contact.LastName,
+                    Email = account.Contact.Email
+                });
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                _services.ChangeFirstNameAndLastName(account.Contact);
+            }
+
+            _context.Accounts.Add(account);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetAccount", new { id = account.Id }, account);
+            return CreatedAtAction(nameof(GetAccount), new { id = account.Id }, account);
         }
 
         // DELETE: api/Accounts/5

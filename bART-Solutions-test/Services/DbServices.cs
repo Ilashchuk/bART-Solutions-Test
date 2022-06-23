@@ -3,7 +3,7 @@ using bART_Solutions_test.Models;
 
 namespace bART_Solutions_test.Services
 {
-    public class DbServices : IAccountsControllerService, IIncidentsControllerService
+    public class DbServices : IAccountsControllerService, IContactsControllerService
     {
         private readonly bARTSolutionsContext _context;
 
@@ -12,71 +12,23 @@ namespace bART_Solutions_test.Services
             _context = context;
         }
 
-        public Account? ChangingBeforAddingToDB(Account? account)
+        public Contact? GetContactById(int id) => _context.Contacts.FirstOrDefault(x => x.Id == id);
+        public Contact? GetContactByEmail(string? email) => _context.Contacts.FirstOrDefault(x => x.Email == email);
+        public Account? GetAccountById(int id) => _context.Accounts.FirstOrDefault(x => x.Id == id);
+        public Account? GetAccountByName(string? name) => _context.Accounts.FirstOrDefault(x => x.Name == name);
+        public bool IsInDb(Contact? contact)
         {
-            if (account.ContactId == 0 && account.Contact == null)
+            if (_context.Contacts.First(c => c.Email == contact.Email) == null)
             {
-                return null;
+                return false;
             }
-
-            if (account.Contact == null)
-            {
-                account.Contact = _context.Contacts.FirstOrDefault(x => x.Id == account.ContactId);
-            }
-            else if (account.ContactId == 0)
-            {
-                Contact? contact = _context.Contacts.FirstOrDefault(x => x.Email == account.Contact.Email);
-                if (contact != null)
-                {
-                    account.ContactId = contact.Id;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            return account;
+            return true;
         }
-
-        public Incident? ChangingBeforAddingToDB(Incident incident)
+        public void ChangeFirstNameAndLastName(Contact? contact)
         {
-            if (incident.AccountId == 0 && incident.Account == null)
-            {
-                return null;
-            }
-
-            if (incident.Account == null)
-            {
-                incident.Account = ChangingBeforAddingToDB(_context.Accounts.FirstOrDefault(x => x.Id == incident.AccountId));
-            }
-            else if (incident.AccountId == 0)
-            {
-                Account? account = _context.Accounts.FirstOrDefault(x => x.Name == incident.Account.Name);
-                
-                if (account != null)
-                {
-                    incident.AccountId = account.Id;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            incident.Account.Contact = ChangingBeforAddingToDB(incident.Account.Contact);
-            if (incident.Account.Contact == null)
-                return null;
-            return incident;
-        }
-
-        public Contact? ChangingBeforAddingToDB(Contact? contact)
-        {
-            Contact? contactFromDb = _context.Contacts.FirstOrDefault(x => x.Email == contact.Email);
-
-            if (contactFromDb == null)
-            {
-                return null;
-            }
-            return contact;
+            _context.Contacts.First(c => c.Email == contact.Email).FirstName = contact.FirstName;
+            _context.Contacts.First(c => c.Email == contact.Email).LastName = contact.LastName;
+            _context.SaveChanges();
         }
     }
 }

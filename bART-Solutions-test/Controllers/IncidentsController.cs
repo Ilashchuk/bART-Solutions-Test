@@ -37,7 +37,7 @@ namespace bART_Solutions_test.Controllers
 
         // GET: api/Incidents/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Incident>> GetIncident(string id)
+        public async Task<ActionResult<Incident>> GetIncidentById(string id)
         {
           if (_context.Incidents == null)
           {
@@ -96,23 +96,50 @@ namespace bART_Solutions_test.Controllers
               return Problem("Entity set 'bARTSolutionsContext.Incidents'  is null.");
           }
 
-            Incident? newIncident= _services.ChangingBeforAddingToDB(incident);
-            if (newIncident == null)
+            if (incident.AccountId == 0 && incident.Account == null)
             {
                 return NotFound();
             }
 
-            _context.Contacts.First(c => c.Email == incident.Account.Contact.Email).FirstName = incident.Account.Contact.FirstName;
-            _context.Contacts.First(c => c.Email == incident.Account.Contact.Email).LastName = incident.Account.Contact.LastName;
-            await _context.SaveChangesAsync();
-            _context.Incidents.Add(new Incident { Description = newIncident.Description,
-                                                  AccountId = newIncident.AccountId
-                                                   });
+            if (incident.Account == null)
+            {
+                incident.Account = _services.GetAccountById(incident.AccountId);
+            }
+            else if (incident.AccountId == 0)
+            {
+                Account? account = _services.GetAccountByName(incident.Account.Name);
 
-            //_context.Incidents.Add(newIncident);
+                if (account != null)
+                {
+                    incident.AccountId = account.Id;
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+
+            if (!_services.IsInDb(incident.Account.Contact.Email))
+            {
+                _context.Contacts.AddRange(new Contact { 
+                    FirstName = incident.Account.Contact.FirstName,
+                    LastName = incident.Account.Contact.LastName,
+                    Email = incident.Account.Contact.Email
+                });
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                _services.ChangeFirstNameAndLastName(incident.Account.Contact);
+            }
+            
+            _context.Incidents.AddRange(new Incident { 
+                Description = incident.Description,
+                AccountId = incident.AccountId
+            });
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetIncident", new { id = incident.Name }, incident);
+            return CreatedAtAction(nameof(GetIncidentById) , new { id = incident.Name }, incident);
         }
 
         // DELETE: api/Incidents/5
