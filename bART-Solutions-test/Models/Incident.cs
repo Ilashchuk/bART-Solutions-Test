@@ -11,6 +11,6 @@ namespace bART_Solutions_test.Models
         public string? Description { get; init; }
         [Required]
         public int AccountId { get; init; }
-        private Account? Account { get; init; }
+        public Account? Account { get; init; }
     }
 }
