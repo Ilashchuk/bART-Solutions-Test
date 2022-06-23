@@ -18,7 +18,7 @@ namespace bART_Solutions_test.Services
         public Account? GetAccountByName(string? name) => _context.Accounts.FirstOrDefault(x => x.Name == name);
         public bool IsInDb(Contact? contact)
         {
-            if (_context.Contacts.First(c => c.Email == contact.Email) == null)
+            if (_context.Contacts.FirstOrDefault(c => c.Email == contact.Email) == null)
             {
                 return false;
             }

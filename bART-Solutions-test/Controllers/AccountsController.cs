@@ -123,7 +123,19 @@ namespace bART_Solutions_test.Controllers
                 _services.ChangeFirstNameAndLastName(account.Contact);
             }
 
-            _context.Accounts.Add(account);
+            if (account.ContactId == 0)
+            {
+                account.ContactId = _services.GetContactByEmail(account.Contact.Email).Id;
+            }
+            if (account.Contact == null)
+            {
+                account.Contact = _services.GetContactById(account.ContactId);
+            }
+
+            _context.Accounts.AddRange(new Account { 
+                Name = account.Name,
+                ContactId = account.ContactId,
+            });
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetAccount), new { id = account.Id }, account);

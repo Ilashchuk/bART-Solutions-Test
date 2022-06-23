@@ -119,7 +119,7 @@ namespace bART_Solutions_test.Controllers
                 }
             }
 
-            if (!_services.IsInDb(incident.Account.Contact.Email))
+            if (!_services.IsInDb(incident.Account.Contact))
             {
                 _context.Contacts.AddRange(new Contact { 
                     FirstName = incident.Account.Contact.FirstName,

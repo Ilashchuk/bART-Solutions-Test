@@ -11,6 +11,6 @@ namespace bART_Solutions_test.Models
         [Required]
         public int ContactId { get; set; }
         public Contact? Contact { get; set; }
-        public ICollection<Incident> Incidents { get; set; } = new List<Incident>();
+        public ICollection<Incident>? Incidents { get; set; } = new List<Incident>();
     }
 }
