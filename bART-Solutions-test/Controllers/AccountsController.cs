@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bART_Solutions_test.Data;
 using bART_Solutions_test.Models;
+using bART_Solutions_test.Services;
 
 namespace bART_Solutions_test.Controllers
 {
@@ -15,10 +16,12 @@ namespace bART_Solutions_test.Controllers
     public class AccountsController : ControllerBase
     {
         private readonly bARTSolutionsContext _context;
+        private readonly DbServices _services;
 
         public AccountsController(bARTSolutionsContext context)
         {
             _context = context;
+            _services = new DbServices(context);
         }
 
         // GET: api/Accounts
@@ -95,28 +98,12 @@ namespace bART_Solutions_test.Controllers
                 return Problem("Entity set 'bARTSolutionsContext.Accounts'  is null.");
             }
 
-            if (account.ContactId == 0 && account.Contact == null)
+            Account? newAccount = _services.ChangingBeforAddingToDB(account);
+            if (newAccount == null)
             {
                 return BadRequest();
             }
-
-            if (account.Contact == null)
-            {
-                account.Contact = _context.Contacts.FirstOrDefault(x => x.Id == account.ContactId);
-            }
-            else if (account.ContactId == 0)
-            {
-                Contact? contact = _context.Contacts.FirstOrDefault(x => x.Email == account.Contact.Email);
-                if (contact != null)
-                {
-                    account.ContactId = contact.Id;
-                }
-                else
-                {
-                    return BadRequest();
-                }
-            }
-            _context.Accounts.Add(account);
+            _context.Accounts.Add(newAccount);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetAccount", new { id = account.Id }, account);

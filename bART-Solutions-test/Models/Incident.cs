@@ -10,7 +10,7 @@ namespace bART_Solutions_test.Models
         public string? Name { get; init; }
         public string? Description { get; init; }
         [Required]
-        public int AccountId { get; init; }
+        public int AccountId { get; set; }
         public Account? Account { get; set; }
     }
 }

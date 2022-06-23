@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bART_Solutions_test.Data;
 using bART_Solutions_test.Models;
+using bART_Solutions_test.Services;
 
 namespace bART_Solutions_test.Controllers
 {
@@ -15,10 +16,12 @@ namespace bART_Solutions_test.Controllers
     public class IncidentsController : ControllerBase
     {
         private readonly bARTSolutionsContext _context;
+        private readonly DbServices _services;
 
         public IncidentsController(bARTSolutionsContext context)
         {
             _context = context;
+            _services = new DbServices(context);
         }
 
         // GET: api/Incidents
@@ -91,8 +94,13 @@ namespace bART_Solutions_test.Controllers
               return Problem("Entity set 'bARTSolutionsContext.Incidents'  is null.");
           }
 
+            Incident? newIncident= _services.ChangingBeforAddingToDB(incident);
+            if (newIncident == null)
+            {
+                return BadRequest();
+            }
 
-            _context.Incidents.Add(incident);
+            _context.Incidents.Add(newIncident);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetIncident", new { id = incident.Name }, incident);
