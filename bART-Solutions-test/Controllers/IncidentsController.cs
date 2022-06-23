@@ -36,14 +36,15 @@ namespace bART_Solutions_test.Controllers
         }
 
         // GET: api/Incidents/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Incident>> GetIncidentById(string id)
+        [HttpGet("{name}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<Incident>> GetIncidentByName(string name)
         {
           if (_context.Incidents == null)
           {
               return NotFound();
           }
-            var incident = await _context.Incidents.FindAsync(id);
+            var incident = await _context.Incidents.FindAsync(name);
 
             if (incident == null)
             {
@@ -137,9 +138,9 @@ namespace bART_Solutions_test.Controllers
                 Description = incident.Description,
                 AccountId = incident.AccountId
             });
-            await _context.SaveChangesAsync();
+             _context.SaveChanges();
 
-            return CreatedAtAction(nameof(GetIncidentById) , new { id = incident.Name }, incident);
+            return CreatedAtAction(nameof(GetIncidentByName) , new { name = incident.Name }, incident);
         }
 
         // DELETE: api/Incidents/5
