@@ -54,6 +54,8 @@ namespace bART_Solutions_test.Controllers
         // PUT: api/Accounts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateAccount(int id, Account account)
         {
             if (id != account.Id)
@@ -85,12 +87,35 @@ namespace bART_Solutions_test.Controllers
         // POST: api/Accounts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Account>> CreateAccount(Account account)
         {
-          if (_context.Accounts == null)
-          {
-              return Problem("Entity set 'bARTSolutionsContext.Accounts'  is null.");
-          }
+            if (_context.Accounts == null)
+            {
+                return Problem("Entity set 'bARTSolutionsContext.Accounts'  is null.");
+            }
+
+            if (account.ContactId == 0 && account.Contact == null)
+            {
+                return BadRequest();
+            }
+
+            if (account.Contact == null)
+            {
+                account.Contact = _context.Contacts.FirstOrDefault(x => x.Id == account.ContactId);
+            }
+            else if (account.ContactId == 0)
+            {
+                Contact? contact = _context.Contacts.FirstOrDefault(x => x.Email == account.Contact.Email);
+                if (contact != null)
+                {
+                    account.ContactId = contact.Id;
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
             _context.Accounts.Add(account);
             await _context.SaveChangesAsync();
 

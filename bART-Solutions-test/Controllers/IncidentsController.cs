@@ -53,7 +53,7 @@ namespace bART_Solutions_test.Controllers
         // PUT: api/Incidents/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutIncident(string id, Incident incident)
+        public async Task<IActionResult> UpdateIncident(string id, Incident incident)
         {
             if (id != incident.Name)
             {
@@ -84,12 +84,14 @@ namespace bART_Solutions_test.Controllers
         // POST: api/Incidents
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Incident>> PostIncident(Incident incident)
+        public async Task<ActionResult<Incident>> CreateIncident(Incident incident)
         {
           if (_context.Incidents == null)
           {
               return Problem("Entity set 'bARTSolutionsContext.Incidents'  is null.");
           }
+
+
             _context.Incidents.Add(incident);
             await _context.SaveChangesAsync();
 

@@ -70,19 +70,6 @@ namespace bART_Solutions_test.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-
-                var accounts = await _context.Accounts.Where(a => a.ContactId == contact.Id).ToListAsync();
-                if (accounts.Count() > 0)
-                {
-                    _context.Accounts.RemoveRange(accounts);
-                    await _context.SaveChangesAsync();
-                }
-
-                if (contact.Accounts.Count() > 0)
-                {
-                    _context.Accounts.AddRange(contact.Accounts);
-                    await _context.SaveChangesAsync();
-                }
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -112,9 +99,6 @@ namespace bART_Solutions_test.Controllers
             if (ModelState.IsValid && contact.Accounts.Count() > 0)
             {
                 await _context.Contacts.AddAsync(contact);
-                await _context.SaveChangesAsync();
-
-                await _context.Accounts.AddRangeAsync(contact.Accounts);
                 await _context.SaveChangesAsync();
 
                 return CreatedAtAction(nameof(GetContact), new { id = contact.Id }, contact);

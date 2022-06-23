@@ -9,8 +9,8 @@ namespace bART_Solutions_test.Models
         [Required]
         public string? Name { get; init; }
         [Required]
-        public int ContactId { get; init; }
-        public Contact? Contact { get; init; }
+        public int ContactId { get; set; }
+        public Contact? Contact { get; set; }
         public ICollection<Incident> Incidents { get; init; } = new List<Incident>();
     }
 }
