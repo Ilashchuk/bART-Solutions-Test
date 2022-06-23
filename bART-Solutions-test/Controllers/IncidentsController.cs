@@ -87,6 +87,8 @@ namespace bART_Solutions_test.Controllers
         // POST: api/Incidents
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Incident>> CreateIncident(Incident incident)
         {
           if (_context.Incidents == null)
@@ -97,10 +99,17 @@ namespace bART_Solutions_test.Controllers
             Incident? newIncident= _services.ChangingBeforAddingToDB(incident);
             if (newIncident == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Incidents.Add(newIncident);
+            _context.Contacts.First(c => c.Email == incident.Account.Contact.Email).FirstName = incident.Account.Contact.FirstName;
+            _context.Contacts.First(c => c.Email == incident.Account.Contact.Email).LastName = incident.Account.Contact.LastName;
+            await _context.SaveChangesAsync();
+            _context.Incidents.Add(new Incident { Description = newIncident.Description,
+                                                  AccountId = newIncident.AccountId
+                                                   });
+
+            //_context.Incidents.Add(newIncident);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetIncident", new { id = incident.Name }, incident);

@@ -92,11 +92,7 @@ namespace bART_Solutions_test.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateContact(Contact contact)
         {
-            if (_context.Accounts == null)
-            {
-                return Problem("Entity set 'bARTSolutionsContext.Accounts'  is null.");
-            }
-            if (ModelState.IsValid && contact.Accounts.Count() > 0)
+            if (ModelState.IsValid)
             {
                 await _context.Contacts.AddAsync(contact);
                 await _context.SaveChangesAsync();

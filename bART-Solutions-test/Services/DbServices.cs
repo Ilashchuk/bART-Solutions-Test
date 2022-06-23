@@ -12,7 +12,7 @@ namespace bART_Solutions_test.Services
             _context = context;
         }
 
-        public Account? ChangingBeforAddingToDB(Account account)
+        public Account? ChangingBeforAddingToDB(Account? account)
         {
             if (account.ContactId == 0 && account.Contact == null)
             {
@@ -47,7 +47,7 @@ namespace bART_Solutions_test.Services
 
             if (incident.Account == null)
             {
-                incident.Account = _context.Accounts.FirstOrDefault(x => x.Id == incident.AccountId);
+                incident.Account = ChangingBeforAddingToDB(_context.Accounts.FirstOrDefault(x => x.Id == incident.AccountId));
             }
             else if (incident.AccountId == 0)
             {
@@ -62,7 +62,21 @@ namespace bART_Solutions_test.Services
                     return null;
                 }
             }
+            incident.Account.Contact = ChangingBeforAddingToDB(incident.Account.Contact);
+            if (incident.Account.Contact == null)
+                return null;
             return incident;
+        }
+
+        public Contact? ChangingBeforAddingToDB(Contact? contact)
+        {
+            Contact? contactFromDb = _context.Contacts.FirstOrDefault(x => x.Email == contact.Email);
+
+            if (contactFromDb == null)
+            {
+                return null;
+            }
+            return contact;
         }
     }
 }
