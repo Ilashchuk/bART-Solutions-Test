@@ -89,6 +89,7 @@ namespace bART_Solutions_test.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Incident>> CreateIncident(Incident incident)
         {
@@ -96,19 +97,19 @@ namespace bART_Solutions_test.Controllers
           {
               return Problem("Entity set 'bARTSolutionsContext.Incidents'  is null.");
           }
-
+            //if Account is no specified => return BadRequest(error 400)
             if (incident.AccountId == 0 && incident.Account == null)
             {
-                return NotFound();
+                return BadRequest();
             }
-
+            //if Account is not found in DB => return NotFound(error 404)
             if (incident.Account == null)
             {
-                incident.Account = _services.GetAccountById(incident.AccountId);
+                incident.Account = await _services.GetAccountById(incident.AccountId);
             }
             else if (incident.AccountId == 0)
             {
-                Account? account = _services.GetAccountByName(incident.Account.Name);
+                Account? account = await _services.GetAccountByName(incident.Account.Name);
 
                 if (account != null)
                 {
@@ -119,24 +120,24 @@ namespace bART_Solutions_test.Controllers
                     return NotFound();
                 }
             }
-
+            //if Contact is in DB => update Contact
             if (_services.IsInDb(incident.Account.Contact))
             {
                 _services.ChangeFirstNameAndLastName(incident.Account.Contact);
             }
-
+            //link account to contact
             _context.Accounts.First(x => x.Name == incident.Account.Name).Contact =
                 _context.Contacts.First(x => x.Email == incident.Account.Contact.Email);
             _context.Accounts.First(x => x.Name == incident.Account.Name).ContactId =
                 _context.Contacts.First(x => x.Email == incident.Account.Contact.Email).Id;
-
+            //create new incident
             Incident newIncident = new Incident { Description = incident.Description,
                                                   Account = _context.Accounts.First(x => x.Name == incident.Account.Name),
                                                   AccountId = _context.Accounts.First(x => x.Name == incident.Account.Name).Id
             };
-
+            //add new incident to DB
             _context.Incidents.AddRange(newIncident);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return newIncident;
         }

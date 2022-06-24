@@ -102,12 +102,12 @@ namespace bART_Solutions_test.Controllers
             {
                 return BadRequest();
             }
-
+            //if Contact is no specified => return BadRequest(error 400)
             if (account.ContactId == 0 && account.Contact == null)
             {
                 return BadRequest();
             }
-
+            //if Contact is in db => update Contact, else => add new Contact
             if (_services.IsInDb(account.Contact))
             {
                 _services.ChangeFirstNameAndLastName(account.Contact);
@@ -118,16 +118,16 @@ namespace bART_Solutions_test.Controllers
 
                 _context.SaveChanges();
             }
-
+            //link account to contact
             if (account.Contact == null)
             {
-                account.Contact = _services.GetContactById(account.ContactId);
+                account.Contact = await _services.GetContactById(account.ContactId);
             }
             if (account.ContactId == 0)
             {
                 account.ContactId = _services.GetContactByEmail(account.Contact.Email).Id;
             }
-
+            //add new Account to DB
             _context.Accounts.AddRange(new Account { 
                 Name = account.Name,
                 ContactId = account.ContactId,

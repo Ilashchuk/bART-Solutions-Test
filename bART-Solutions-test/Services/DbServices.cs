@@ -1,5 +1,7 @@
 ﻿using bART_Solutions_test.Data;
 using bART_Solutions_test.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Data.Entity;
 
 namespace bART_Solutions_test.Services
 {
@@ -12,10 +14,11 @@ namespace bART_Solutions_test.Services
             _context = context;
         }
 
-        public Contact? GetContactById(int id) => _context.Contacts.FirstOrDefault(x => x.Id == id);
-        public Contact? GetContactByEmail(string? email) => _context.Contacts.FirstOrDefault(x => x.Email == email);
-        public Account? GetAccountById(int id) => _context.Accounts.FirstOrDefault(x => x.Id == id);
-        public Account? GetAccountByName(string? name) => _context.Accounts.FirstOrDefault(x => x.Name == name);
+        public async Task<Account?> GetAccountById(int id) => await _context.Accounts.FindAsync(id);
+        public async Task<Account?> GetAccountByName(string? name) => await _context.Accounts.FirstOrDefaultAsync(x => x.Name == name);
+
+        public async Task<Contact?> GetContactById(int id) => await _context.Contacts.FindAsync(id);
+        public async Task<Contact?> GetContactByEmail(string? email) => await _context.Contacts.FirstOrDefaultAsync(x => x.Email == email);
         public bool IsInDb(Contact? contact)
         {
             if (_context.Contacts.FirstOrDefault(c => c.Email == contact.Email) == null)
