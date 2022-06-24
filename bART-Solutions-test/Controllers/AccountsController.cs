@@ -108,28 +108,24 @@ namespace bART_Solutions_test.Controllers
                 return BadRequest();
             }
 
-            if (!_services.IsInDb(account.Contact))
-            {
-                _context.Contacts.AddRange(new Contact
-                {
-                    FirstName = account.Contact.FirstName,
-                    LastName = account.Contact.LastName,
-                    Email = account.Contact.Email
-                });
-                await _context.SaveChangesAsync();
-            }
-            else
+            if (_services.IsInDb(account.Contact))
             {
                 _services.ChangeFirstNameAndLastName(account.Contact);
             }
-
-            if (account.ContactId == 0)
+            else if(account.Contact != null)
             {
-                account.ContactId = _services.GetContactByEmail(account.Contact.Email).Id;
+                _context.Contacts.AddRange(account.Contact);
+
+                _context.SaveChanges();
             }
+
             if (account.Contact == null)
             {
                 account.Contact = _services.GetContactById(account.ContactId);
+            }
+            if (account.ContactId == 0)
+            {
+                account.ContactId = _services.GetContactByEmail(account.Contact.Email).Id;
             }
 
             _context.Accounts.AddRange(new Account { 

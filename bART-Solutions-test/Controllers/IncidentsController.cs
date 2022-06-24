@@ -120,27 +120,25 @@ namespace bART_Solutions_test.Controllers
                 }
             }
 
-            if (!_services.IsInDb(incident.Account.Contact))
-            {
-                _context.Contacts.AddRange(new Contact { 
-                    FirstName = incident.Account.Contact.FirstName,
-                    LastName = incident.Account.Contact.LastName,
-                    Email = incident.Account.Contact.Email
-                });
-                await _context.SaveChangesAsync();
-            }
-            else
+            if (_services.IsInDb(incident.Account.Contact))
             {
                 _services.ChangeFirstNameAndLastName(incident.Account.Contact);
             }
-            
-            _context.Incidents.AddRange(new Incident { 
-                Description = incident.Description,
-                AccountId = incident.AccountId
-            });
-             _context.SaveChanges();
 
-            return CreatedAtAction(nameof(GetIncidentByName) , new { name = incident.Name }, incident);
+            _context.Accounts.First(x => x.Name == incident.Account.Name).Contact =
+                _context.Contacts.First(x => x.Email == incident.Account.Contact.Email);
+            _context.Accounts.First(x => x.Name == incident.Account.Name).ContactId =
+                _context.Contacts.First(x => x.Email == incident.Account.Contact.Email).Id;
+
+            Incident newIncident = new Incident { Description = incident.Description,
+                                                  Account = _context.Accounts.First(x => x.Name == incident.Account.Name),
+                                                  AccountId = _context.Accounts.First(x => x.Name == incident.Account.Name).Id
+            };
+
+            _context.Incidents.AddRange(newIncident);
+            _context.SaveChanges();
+
+            return newIncident;
         }
 
         // DELETE: api/Incidents/5
