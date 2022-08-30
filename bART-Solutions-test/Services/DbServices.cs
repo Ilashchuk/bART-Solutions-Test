@@ -2,6 +2,7 @@
 using bART_Solutions_test.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Entity;
+using System.Threading.Tasks;
 
 namespace bART_Solutions_test.Services
 {
@@ -14,11 +15,11 @@ namespace bART_Solutions_test.Services
             _context = context;
         }
 
-        public async Task<Account?> GetAccountById(int id) => await _context.Accounts.FindAsync(id);
-        public async Task<Account?> GetAccountByName(string? name) => await _context.Accounts.FirstOrDefaultAsync(x => x.Name == name);
+        public Task<Account?> GetAccountByIdAsync(int id) => _context.Accounts.FirstOrDefaultAsync(x => x.Id == id);
+        public Task<Account?> GetAccountByNameAsync(string? name) => _context.Accounts.FirstOrDefaultAsync(x => x.Name == name);
 
-        public async Task<Contact?> GetContactById(int id) => await _context.Contacts.FindAsync(id);
-        public async Task<Contact?> GetContactByEmail(string? email) => await _context.Contacts.FirstOrDefaultAsync(x => x.Email == email);
+        public Task<Contact?> GetContactByIdAsync(int id) => _context.Contacts.FirstOrDefaultAsync(x => x.Id == id);
+        public Task<Contact?> GetContactByEmailAsync(string? email) => _context.Contacts.FirstOrDefaultAsync(x => x.Email == email);
         public bool IsInDb(Contact? contact)
         {
             if (_context.Contacts.FirstOrDefault(c => c.Email == contact.Email) == null)

@@ -4,7 +4,7 @@ namespace bART_Solutions_test.Services
 {
     public interface IAccountsControllerService
     {
-        public Task<Account?> GetAccountById(int id);
-        public Task<Account?> GetAccountByName(string? name);
+        public Task<Account?> GetAccountByIdAsync(int id);
+        public Task<Account?> GetAccountByNameAsync(string? name);
     }
 }

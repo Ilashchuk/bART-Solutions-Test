@@ -105,11 +105,11 @@ namespace bART_Solutions_test.Controllers
             //if Account is not found in DB => return NotFound(error 404)
             if (incident.Account == null)
             {
-                incident.Account = await _services.GetAccountById(incident.AccountId);
+                incident.Account = await _services.GetAccountByIdAsync(incident.AccountId);
             }
             else if (incident.AccountId == 0)
             {
-                Account? account = await _services.GetAccountByName(incident.Account.Name);
+                Account? account = await _services.GetAccountByNameAsync(incident.Account.Name);
 
                 if (account != null)
                 {

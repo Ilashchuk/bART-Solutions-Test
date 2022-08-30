@@ -121,11 +121,11 @@ namespace bART_Solutions_test.Controllers
             //link account to contact
             if (account.Contact == null)
             {
-                account.Contact = await _services.GetContactById(account.ContactId);
+                account.Contact = await _services.GetContactByIdAsync(account.ContactId);
             }
             if (account.ContactId == 0)
             {
-                account.ContactId = _services.GetContactByEmail(account.Contact.Email).Id;
+                account.ContactId = _services.GetContactByEmailAsync(account.Contact.Email).Id;
             }
             //add new Account to DB
             _context.Accounts.AddRange(new Account { 
