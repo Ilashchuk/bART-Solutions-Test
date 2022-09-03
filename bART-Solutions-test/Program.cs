@@ -1,4 +1,5 @@
 using bART_Solutions_test.Data;
+using bART_Solutions_test.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -14,6 +15,10 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectio
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IAccountsControllerService, AccountsControllerService>();
+builder.Services.AddScoped<IContactsControllerService, ContactsControllerService>();
+builder.Services.AddScoped<IIncidentsControllerService, IncidentsControllerService>();
 
 var app = builder.Build();
 
