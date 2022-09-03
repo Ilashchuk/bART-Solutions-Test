@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bART_Solutions_test.Data;
 using bART_Solutions_test.Models;
+using bART_Solutions_test.Services;
 
 namespace bART_Solutions_test.Controllers
 {
@@ -14,22 +15,18 @@ namespace bART_Solutions_test.Controllers
     [ApiController]
     public class ContactsController : ControllerBase
     {
-        private readonly bARTSolutionsContext _context;
+        private readonly IContactsControllerService _contactsControleService;
 
-        public ContactsController(bARTSolutionsContext context)
+        public ContactsController(IContactsControllerService contactsControleService)
         {
-            _context = context;
+            _contactsControleService = contactsControleService;
         }
 
         // GET: api/Contacts
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Contact>>> GetContacts()
         {
-          if (_context.Contacts == null)
-          {
-              return NotFound();
-          }
-            return await _context.Contacts.Include(c => c.Accounts).ToListAsync();
+            return await _contactsControleService.GetContactsAsync();
         }
 
         // GET: api/Contacts/5
@@ -38,12 +35,11 @@ namespace bART_Solutions_test.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Contact>> GetContact(int id)
         {
-          if (_context.Contacts == null)
+          if (_contactsControleService.GetContactsAsync() == null)
           {
               return NotFound();
           }
-            var contact = await _context.Contacts.Include(_c => _c.Accounts)
-                .SingleOrDefaultAsync(c => c.Id == id);
+            var contact = await _contactsControleService.GetContactByIdAsync(id);
 
             if (contact == null)
             {
@@ -65,22 +61,11 @@ namespace bART_Solutions_test.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(contact).State = EntityState.Modified;
+            _contactsControleService.UpdateContactAsync(contact);
 
-            try
+            if (!_contactsControleService.ContactExists(id))
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ContactExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
             return NoContent();
@@ -94,8 +79,7 @@ namespace bART_Solutions_test.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _context.Contacts.AddAsync(contact);
-                await _context.SaveChangesAsync();
+                await _contactsControleService.AddNewContactAsync(contact);
 
                 return CreatedAtAction(nameof(GetContact), new { id = contact.Id }, contact);
             }
@@ -106,25 +90,21 @@ namespace bART_Solutions_test.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteContact(int id)
         {
-            if (_context.Contacts == null)
+            if (_contactsControleService.GetContactsAsync == null)
             {
                 return NotFound();
             }
-            var contact = await _context.Contacts.FindAsync(id);
+            var contact = await _contactsControleService.GetContactByIdAsync(id);
             if (contact == null)
             {
                 return NotFound();
             }
 
-            _context.Contacts.Remove(contact);
-            await _context.SaveChangesAsync();
+            await _contactsControleService.DeleteContactAsync(contact);
 
             return NoContent();
         }
 
-        private bool ContactExists(int id)
-        {
-            return (_context.Contacts?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+        
     }
 }

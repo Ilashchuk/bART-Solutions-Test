@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace bART_Solutions_test.Services
 {
-    public class DbServices : IAccountsControllerService, IContactsControllerService
+    public class DbServices
     {
         private readonly bARTSolutionsContext _context;
 

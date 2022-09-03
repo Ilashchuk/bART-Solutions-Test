@@ -15,36 +15,36 @@ namespace bART_Solutions_test.Controllers
     [ApiController]
     public class AccountsController : ControllerBase
     {
-        private readonly bARTSolutionsContext _context;
-        private readonly DbServices _services;
+        //private readonly bARTSolutionsContext _context;
+        //private readonly DbServices _services;
+        private readonly IAccountsControllerService _accountsControllerService;
+        private readonly IContactsControllerService _contactsControllerService;
 
-        public AccountsController(bARTSolutionsContext context)
+        public AccountsController(IAccountsControllerService accountsControllerService, IContactsControllerService contactsControllerService)
         {
-            _context = context;
-            _services = new DbServices(context);
+            _accountsControllerService = accountsControllerService;
+            _contactsControllerService = contactsControllerService;
+            //_context = context;
+            //_services = new DbServices(context);
         }
 
         // GET: api/Accounts
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Account>>> GetAccounts()
         {
-          if (_context.Accounts == null)
-          {
-              return NotFound();
-          }
-            return await _context.Accounts.Include(a => a.Incidents).ToListAsync();
+            return await _accountsControllerService.GetAccountsAsync();
         }
 
         // GET: api/Accounts/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Account>> GetAccount(int id)
         {
-          if (_context.Accounts == null)
-          {
-              return NotFound();
-          }
-            var account = await _context.Accounts.Include(a => a.Incidents)
-                .SingleOrDefaultAsync(a => a.Id == id);
+            if (_accountsControllerService.GetAccountsAsync() == null)
+            {
+                return NotFound();
+            }
+
+            var account = await _accountsControllerService.GetAccountByIdAsync(id);
 
             if (account == null)
             {
@@ -66,22 +66,11 @@ namespace bART_Solutions_test.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(account).State = EntityState.Modified;
+            await _accountsControllerService.UpdateAccountAsync(account);
 
-            try
+            if (!_accountsControllerService.AccountExists(id))
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!AccountExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
             return NoContent();
@@ -93,7 +82,7 @@ namespace bART_Solutions_test.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Account>> CreateAccount(Account account)
         {
-            if (_context.Accounts == null)
+            if (_accountsControllerService.GetAccountsAsync == null)
             {
                 return Problem("Entity set 'bARTSolutionsContext.Accounts'  is null.");
             }
@@ -108,31 +97,30 @@ namespace bART_Solutions_test.Controllers
                 return BadRequest();
             }
             //if Contact is in db => update Contact, else => add new Contact
-            if (_services.IsInDb(account.Contact))
+            if (_contactsControllerService.IsContactInDb(account.Contact))
             {
-                _services.ChangeFirstNameAndLastName(account.Contact);
+                _contactsControllerService.ChangeFirstNameAndLastNameInContact(account.Contact);
             }
             else if(account.Contact != null)
             {
-                _context.Contacts.AddRange(account.Contact);
-
-                _context.SaveChanges();
+                await _contactsControllerService.AddNewContactAsync(account.Contact);
             }
             //link account to contact
             if (account.Contact == null)
             {
-                account.Contact = await _services.GetContactByIdAsync(account.ContactId);
+                account.Contact = await _contactsControllerService.GetContactByIdAsync(account.ContactId);
             }
             if (account.ContactId == 0)
             {
-                account.ContactId = _services.GetContactByEmailAsync(account.Contact.Email).Id;
+                account.ContactId = _contactsControllerService.GetContactByEmailAsync(account.Contact.Email).Id;
             }
             //add new Account to DB
-            _context.Accounts.AddRange(new Account { 
-                Name = account.Name,
-                ContactId = account.ContactId,
-            });
-            await _context.SaveChangesAsync();
+            await _accountsControllerService.AddNewAccountAsync(account);
+            //_context.Accounts.AddRange(new Account { 
+            //    Name = account.Name,
+            //    ContactId = account.ContactId,
+            //});
+            //await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetAccount), new { id = account.Id }, account);
         }
@@ -141,25 +129,21 @@ namespace bART_Solutions_test.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAccount(int id)
         {
-            if (_context.Accounts == null)
+            if (_accountsControllerService.GetAccountsAsync == null)
             {
                 return NotFound();
             }
-            var account = await _context.Accounts.FindAsync(id);
+            var account = await _accountsControllerService.GetAccountByIdAsync(id);
             if (account == null)
             {
                 return NotFound();
             }
 
-            _context.Accounts.Remove(account);
-            await _context.SaveChangesAsync();
+            await _accountsControllerService.DeleteAccountAsync(account);
 
             return NoContent();
         }
 
-        private bool AccountExists(int id)
-        {
-            return (_context.Accounts?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+        
     }
 }
