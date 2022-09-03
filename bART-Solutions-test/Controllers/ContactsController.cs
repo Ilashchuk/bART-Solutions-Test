@@ -61,7 +61,7 @@ namespace bART_Solutions_test.Controllers
                 return BadRequest();
             }
 
-            _contactsControleService.UpdateContactAsync(contact);
+            await _contactsControleService.UpdateContactAsync(contact);
 
             if (!_contactsControleService.ContactExists(id))
             {

@@ -15,24 +15,25 @@ namespace bART_Solutions_test.Controllers
     [ApiController]
     public class IncidentsController : ControllerBase
     {
-        private readonly bARTSolutionsContext _context;
-        private readonly DbServices _services;
+        private readonly IIncidentsControllerService _incidentsControllerService;
+        private readonly IAccountsControllerService _accountsControllerService;
+        private readonly IContactsControllerService _contactsControllerService;
 
-        public IncidentsController(bARTSolutionsContext context)
+        public IncidentsController(
+            IIncidentsControllerService incidentsControllerService, 
+            IAccountsControllerService accountsControllerService, 
+            IContactsControllerService contactsControllerService)
         {
-            _context = context;
-            _services = new DbServices(context);
+            _incidentsControllerService = incidentsControllerService;
+            _accountsControllerService = accountsControllerService;
+            _contactsControllerService = contactsControllerService;
         }
 
         // GET: api/Incidents
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Incident>>> GetIncidents()
         {
-          if (_context.Incidents == null)
-          {
-              return NotFound();
-          }
-            return await _context.Incidents.ToListAsync();
+            return await _incidentsControllerService.GetIncidentsAsync();
         }
 
         // GET: api/Incidents/5
@@ -40,11 +41,11 @@ namespace bART_Solutions_test.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Incident>> GetIncidentByName(string name)
         {
-          if (_context.Incidents == null)
+          if (_incidentsControllerService.GetIncidentsAsync() == null)
           {
               return NotFound();
           }
-            var incident = await _context.Incidents.FindAsync(name);
+            var incident = await _incidentsControllerService.GetIncidentByNameAsync(name);
 
             if (incident == null)
             {
@@ -64,22 +65,11 @@ namespace bART_Solutions_test.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(incident).State = EntityState.Modified;
+            await _incidentsControllerService.UpdateIncidentAsync(incident);
 
-            try
+            if (!_incidentsControllerService.IncidentExists(id))
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!IncidentExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
             return NoContent();
@@ -93,7 +83,7 @@ namespace bART_Solutions_test.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Incident>> CreateIncident(Incident incident)
         {
-          if (_context.Incidents == null)
+          if (_incidentsControllerService.GetIncidentsAsync == null)
           {
               return Problem("Entity set 'bARTSolutionsContext.Incidents'  is null.");
           }
@@ -105,11 +95,11 @@ namespace bART_Solutions_test.Controllers
             //if Account is not found in DB => return NotFound(error 404)
             if (incident.Account == null)
             {
-                incident.Account = await _services.GetAccountByIdAsync(incident.AccountId);
+                incident.Account = await _accountsControllerService.GetAccountByIdAsync(incident.AccountId);
             }
             else if (incident.AccountId == 0)
             {
-                Account? account = await _services.GetAccountByNameAsync(incident.Account.Name);
+                Account? account = await _accountsControllerService.GetAccountByNameAsync(incident.Account.Name);
 
                 if (account != null)
                 {
@@ -121,23 +111,34 @@ namespace bART_Solutions_test.Controllers
                 }
             }
             //if Contact is in DB => update Contact
-            if (_services.IsInDb(incident.Account.Contact))
+            if (_contactsControllerService.IsContactInDb(incident.Account.Contact))
             {
-                _services.ChangeFirstNameAndLastName(incident.Account.Contact);
+                _contactsControllerService.ChangeFirstNameAndLastNameInContact(incident.Account.Contact);
             }
             //link account to contact
-            _context.Accounts.First(x => x.Name == incident.Account.Name).Contact =
-                _context.Contacts.First(x => x.Email == incident.Account.Contact.Email);
-            _context.Accounts.First(x => x.Name == incident.Account.Name).ContactId =
-                _context.Contacts.First(x => x.Email == incident.Account.Contact.Email).Id;
+            Account? account_ = await _accountsControllerService.GetAccountByNameAsync(incident.Account.Name);
+            account_.Contact = await _contactsControllerService.GetContactByEmailAsync(incident.Account.Contact.Email);
+            account_.ContactId = _contactsControllerService.GetContactByEmailAsync(incident.Account.Contact.Email).Id;
+
+            await _accountsControllerService.UpdateAccountAsync(account_);
+            //_context.Accounts.First(x => x.Name == incident.Account.Name).Contact =
+            //    _context.Contacts.First(x => x.Email == incident.Account.Contact.Email);
+            //_context.Accounts.First(x => x.Name == incident.Account.Name).ContactId =
+            //    _context.Contacts.First(x => x.Email == incident.Account.Contact.Email).Id;
+
             //create new incident
-            Incident newIncident = new Incident { Description = incident.Description,
-                                                  Account = _context.Accounts.First(x => x.Name == incident.Account.Name),
-                                                  AccountId = _context.Accounts.First(x => x.Name == incident.Account.Name).Id
+            Incident newIncident = new Incident
+            {
+                Description = incident.Description,
+                Account = await _accountsControllerService.GetAccountByNameAsync(incident.Account.Name),
+                AccountId = _accountsControllerService.GetAccountByNameAsync(incident.Account.Name).Id
             };
+            //Incident newIncident = new Incident { Description = incident.Description,
+            //                                      Account = _context.Accounts.First(x => x.Name == incident.Account.Name),
+            //                                      AccountId = _context.Accounts.First(x => x.Name == incident.Account.Name).Id
+            //};
             //add new incident to DB
-            _context.Incidents.AddRange(newIncident);
-            await _context.SaveChangesAsync();
+            await _incidentsControllerService.AddNewIncidentAsync(newIncident);
 
             return newIncident;
         }
@@ -146,25 +147,22 @@ namespace bART_Solutions_test.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteIncident(string id)
         {
-            if (_context.Incidents == null)
+            if (_incidentsControllerService.GetIncidentsAsync() == null)
             {
                 return NotFound();
             }
-            var incident = await _context.Incidents.FindAsync(id);
+
+            var incident = await _incidentsControllerService.GetIncidentByNameAsync(id);
             if (incident == null)
             {
                 return NotFound();
             }
 
-            _context.Incidents.Remove(incident);
-            await _context.SaveChangesAsync();
+            await _incidentsControllerService.DeleteIncidentAsync(incident);
 
             return NoContent();
         }
 
-        private bool IncidentExists(string id)
-        {
-            return (_context.Incidents?.Any(e => e.Name == id)).GetValueOrDefault();
-        }
+        
     }
 }
