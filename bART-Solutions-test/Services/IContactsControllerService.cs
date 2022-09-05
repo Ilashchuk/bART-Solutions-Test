@@ -11,7 +11,7 @@ namespace bART_Solutions_test.Services
         public Task AddNewContactAsync(Contact contact);
         public Task DeleteContactAsync(Contact contact);
         public bool IsContactInDb(Contact? contact);
-        public void ChangeFirstNameAndLastNameInContact(Contact? contact);
+        public Task ChangeFirstNameAndLastNameInContact(Contact? contact);
         public bool ContactExists(int id);
 
     }

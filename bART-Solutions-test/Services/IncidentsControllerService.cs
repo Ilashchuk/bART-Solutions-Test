@@ -14,10 +14,6 @@ namespace bART_Solutions_test.Services
 
         public Task<List<Incident>> GetIncidentsAsync()
         {
-            if (_context.Incidents == null)
-            {
-                return null;
-            }
             return _context.Incidents.ToListAsync();
         }
         public Task<Incident?> GetIncidentByNameAsync(string? name) => _context.Incidents.FirstOrDefaultAsync(x => x.Name == name);
@@ -28,7 +24,7 @@ namespace bART_Solutions_test.Services
         }
         public async Task AddNewIncidentAsync(Incident incident)
         {
-            await _context.Incidents.AddAsync(incident);
+            _context.Incidents.Add(incident);
             await _context.SaveChangesAsync();
         }
         public async Task DeleteIncidentAsync(Incident incident)

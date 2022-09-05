@@ -111,29 +111,35 @@ namespace bART_Solutions_test.Controllers
                 }
             }
             //if Contact is in DB => update Contact
-            if (_contactsControllerService.IsContactInDb(incident.Account.Contact))
+            if (incident.Account != null && _contactsControllerService.IsContactInDb(incident.Account.Contact))
             {
-                _contactsControllerService.ChangeFirstNameAndLastNameInContact(incident.Account.Contact);
+                await _contactsControllerService.ChangeFirstNameAndLastNameInContact(incident.Account.Contact);
+                //link account to contact
+                Account? account_ = await _accountsControllerService.GetAccountByNameAsync(incident.Account.Name);
+                if (account_ != null && incident.Account.Contact != null)
+                {
+                    account_.Contact = await _contactsControllerService.GetContactByEmailAsync(incident.Account.Contact.Email);
+                    account_.ContactId = _contactsControllerService.GetContactByEmailAsync(incident.Account.Contact.Email).Id;
+
+                    await _accountsControllerService.UpdateAccountAsync(account_);
+                }
             }
-            //link account to contact
-            Account? account_ = await _accountsControllerService.GetAccountByNameAsync(incident.Account.Name);
-            account_.Contact = await _contactsControllerService.GetContactByEmailAsync(incident.Account.Contact.Email);
-            account_.ContactId = _contactsControllerService.GetContactByEmailAsync(incident.Account.Contact.Email).Id;
-
-            await _accountsControllerService.UpdateAccountAsync(account_);
-
             //create new incident
-            Incident newIncident = new Incident
+            if (incident.Account != null)
             {
-                Description = incident.Description,
-                Account = await _accountsControllerService.GetAccountByNameAsync(incident.Account.Name),
-                AccountId = _accountsControllerService.GetAccountByNameAsync(incident.Account.Name).Id
-            };
+                Incident newIncident = new()
+                {
+                    Description = incident.Description,
+                    Account = await _accountsControllerService.GetAccountByNameAsync(incident.Account.Name),
+                    AccountId = _accountsControllerService.GetAccountByNameAsync(incident.Account.Name).Id
+                };
 
-            //add new incident to DB
-            await _incidentsControllerService.AddNewIncidentAsync(newIncident);
+                //add new incident to DB
+                await _incidentsControllerService.AddNewIncidentAsync(newIncident);
 
-            return newIncident;
+                return newIncident;
+            }
+            return BadRequest();
         }
 
         // DELETE: api/Incidents/5

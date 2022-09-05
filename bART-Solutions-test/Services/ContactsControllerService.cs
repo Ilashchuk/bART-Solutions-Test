@@ -13,10 +13,6 @@ namespace bART_Solutions_test.Services
         }
         public Task<List<Contact>> GetContactsAsync()
         {
-            if (_context.Contacts == null)
-            {
-                return null;
-            }
             return _context.Contacts.Include(a => a.Accounts).ToListAsync();
         }
         public Task<Contact?> GetContactByIdAsync(int id) => _context.Contacts.FirstOrDefaultAsync(x => x.Id == id);
@@ -28,7 +24,7 @@ namespace bART_Solutions_test.Services
         }
         public async Task AddNewContactAsync(Contact contact)
         {
-            await _context.Contacts.AddAsync(contact);
+            _context.Contacts.Add(contact);
             await _context.SaveChangesAsync();
         }
         public async Task DeleteContactAsync(Contact contact)
@@ -38,17 +34,20 @@ namespace bART_Solutions_test.Services
         }
         public bool IsContactInDb(Contact? contact)
         {
-            if (_context.Contacts.FirstOrDefault(c => c.Email == contact.Email) == null)
+            if (contact != null && _context.Contacts.FirstOrDefault(c => c.Email == contact.Email) == null)
             {
                 return false;
             }
             return true;
         }
-        public void ChangeFirstNameAndLastNameInContact(Contact? contact)
+        public async Task ChangeFirstNameAndLastNameInContact(Contact? contact)
         {
-            _context.Contacts.First(c => c.Email == contact.Email).FirstName = contact.FirstName;
-            _context.Contacts.First(c => c.Email == contact.Email).LastName = contact.LastName;
-            _context.SaveChanges();
+            if (contact != null)
+            {
+                _context.Contacts.First(c => c.Email == contact.Email).FirstName = contact.FirstName;
+                _context.Contacts.First(c => c.Email == contact.Email).LastName = contact.LastName;
+            }
+            await _context.SaveChangesAsync();
         }
 
         public bool ContactExists(int id)

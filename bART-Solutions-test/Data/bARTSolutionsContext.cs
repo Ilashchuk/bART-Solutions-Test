@@ -6,9 +6,9 @@ namespace bART_Solutions_test.Data
 {
     public class bARTSolutionsContext : DbContext
     {
-        public DbSet<Contact> Contacts { get; set; }
-        public DbSet<Account> Accounts { get; set; }
-        public DbSet<Incident> Incidents { get; set; }
+        public DbSet<Contact> Contacts { get; set; } = null!;
+        public DbSet<Account> Accounts { get; set; } = null!;
+        public DbSet<Incident> Incidents { get; set; } = null!;
 
         public bARTSolutionsContext(DbContextOptions<bARTSolutionsContext> options) : base(options)
         {

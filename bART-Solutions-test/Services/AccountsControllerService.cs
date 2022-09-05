@@ -15,10 +15,6 @@ namespace bART_Solutions_test.Services
 
         public Task<List<Account>> GetAccountsAsync()
         {
-            if (_context.Accounts == null)
-            {
-                return null;
-            }
             return _context.Accounts.Include(a => a.Incidents).ToListAsync();
         }
 
@@ -33,11 +29,7 @@ namespace bART_Solutions_test.Services
 
         public async Task AddNewAccountAsync(Account account)
         {
-            _context.Accounts.AddRange(new Account
-            {
-                Name = account.Name,
-                ContactId = account.ContactId,
-            });
+            _context.Accounts.Add(account);
             await _context.SaveChangesAsync();
         }
 

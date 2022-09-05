@@ -56,7 +56,7 @@ namespace bART_Solutions_test.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateContact(int id, Contact contact)
         {
-            if (id != contact.Id || contact.Accounts.Count() == 0)
+            if (id != contact.Id || contact.Accounts == null)
             {
                 return BadRequest();
             }

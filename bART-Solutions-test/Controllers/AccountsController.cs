@@ -95,20 +95,21 @@ namespace bART_Solutions_test.Controllers
             //if Contact is in db => update Contact, else => add new Contact
             if (_contactsControllerService.IsContactInDb(account.Contact))
             {
-                _contactsControllerService.ChangeFirstNameAndLastNameInContact(account.Contact);
+                await _contactsControllerService.ChangeFirstNameAndLastNameInContact(account.Contact);
             }
             else if(account.Contact != null)
             {
                 await _contactsControllerService.AddNewContactAsync(account.Contact);
             }
             //link account to contact
+            var contact = await _contactsControllerService.GetContactByIdAsync(account.ContactId);
             if (account.Contact == null)
             {
-                account.Contact = await _contactsControllerService.GetContactByIdAsync(account.ContactId);
+                account.Contact = contact;
             }
-            if (account.ContactId == 0)
+            if (account.ContactId == 0 && contact != null)
             {
-                account.ContactId = _contactsControllerService.GetContactByEmailAsync(account.Contact.Email).Id;
+                account.ContactId = contact.Id;
             }
             //add new Account to DB
             await _accountsControllerService.AddNewAccountAsync(account);
