@@ -15,8 +15,6 @@ namespace bART_Solutions_test.Controllers
     [ApiController]
     public class AccountsController : ControllerBase
     {
-        //private readonly bARTSolutionsContext _context;
-        //private readonly DbServices _services;
         private readonly IAccountsControllerService _accountsControllerService;
         private readonly IContactsControllerService _contactsControllerService;
 
@@ -24,8 +22,6 @@ namespace bART_Solutions_test.Controllers
         {
             _accountsControllerService = accountsControllerService;
             _contactsControllerService = contactsControllerService;
-            //_context = context;
-            //_services = new DbServices(context);
         }
 
         // GET: api/Accounts
@@ -116,11 +112,6 @@ namespace bART_Solutions_test.Controllers
             }
             //add new Account to DB
             await _accountsControllerService.AddNewAccountAsync(account);
-            //_context.Accounts.AddRange(new Account { 
-            //    Name = account.Name,
-            //    ContactId = account.ContactId,
-            //});
-            //await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetAccount), new { id = account.Id }, account);
         }

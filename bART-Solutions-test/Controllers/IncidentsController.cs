@@ -121,10 +121,6 @@ namespace bART_Solutions_test.Controllers
             account_.ContactId = _contactsControllerService.GetContactByEmailAsync(incident.Account.Contact.Email).Id;
 
             await _accountsControllerService.UpdateAccountAsync(account_);
-            //_context.Accounts.First(x => x.Name == incident.Account.Name).Contact =
-            //    _context.Contacts.First(x => x.Email == incident.Account.Contact.Email);
-            //_context.Accounts.First(x => x.Name == incident.Account.Name).ContactId =
-            //    _context.Contacts.First(x => x.Email == incident.Account.Contact.Email).Id;
 
             //create new incident
             Incident newIncident = new Incident
@@ -133,10 +129,7 @@ namespace bART_Solutions_test.Controllers
                 Account = await _accountsControllerService.GetAccountByNameAsync(incident.Account.Name),
                 AccountId = _accountsControllerService.GetAccountByNameAsync(incident.Account.Name).Id
             };
-            //Incident newIncident = new Incident { Description = incident.Description,
-            //                                      Account = _context.Accounts.First(x => x.Name == incident.Account.Name),
-            //                                      AccountId = _context.Accounts.First(x => x.Name == incident.Account.Name).Id
-            //};
+
             //add new incident to DB
             await _incidentsControllerService.AddNewIncidentAsync(newIncident);
 
